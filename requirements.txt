@@ -36,7 +36,9 @@ python-slugify==4.0.1
 PyYAML==5.3.1
 qwikidata==0.4.0
 requests==2.24.0
+reverse-geocode==1.4.1
 s3transfer==0.3.3
+scipy==1.5.2
 six==1.15.0
 spinners==0.0.24
 spotipy==2.13.0
