@@ -1,0 +1,15 @@
+<html>
+<head>
+  <title>Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+</head>
+<body>
+
+<iframe id="player" src="https://open.spotify.com/embed/playlist/{{ playlist_id }}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+<script>
+    var video=document.getElementById("player");
+</script>
+
+
+</body>
+</html>

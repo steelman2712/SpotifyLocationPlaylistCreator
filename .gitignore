@@ -1,0 +1,8 @@
+/venv/
+/project/__pycache__/
+/project/.flask_session/
+/project/.spotify_caches/
+*.cache*
+*.code-workspace
+*.sh
+*.zip
