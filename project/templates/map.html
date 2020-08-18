@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo</title>
+    <link rel="stylesheet" href="//unpkg.com/leaflet@1.0.3/dist/leaflet.css" /> <!-- Leaflet CSS file (style sheets)>-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
+    <script src="//unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script> <!--leaflet java script file>-->
+    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="//malsup.github.io/jquery.blockUI.js"></script>
+
+</head>
+<body>
+    <div id="map1" style="width: 60%; height: 600px;"></div>   
+
+    <form action="{{url_for('map')}}" id="coordinate_form" method="POST">
+        <input id="latitude" name="latitude" type="text"/>
+        <input id="longitude" name="longitude" type="text"/>
+        <input id="submit" value="Submit" type="submit"/>
+    </form>
+
+    <div id="loadingMessage" style="display:none;">
+        <h1>Processing data...</h1>
+        <div class="loader"></div> 
+    </div>
+
+<script>
+    var mymap = L.map('map1').setView([51.5, -0.09], 10);
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: 'pk.eyJ1Ijoic3RlZWxtYW4yNzEyIiwiYSI6ImNrYzhhZXpxbzB0YXUydm54a244aHQ5a3EifQ.itjiUabFvbEDR2ddyDukAQ'
+    }).addTo(mymap);
+
+    var popup = L.popup();
+    var latlong;
+    var lat_input = document.getElementById("latitude"); 
+    var long_input = document.getElementById("longitude"); 
+
+    function onMapClick(e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent("You clicked the map at " + e.latlng.toString())
+            .openOn(mymap);
+        lat = e.latlng.lat;
+        long = e.latlng.lng;
+        lat_input.value=lat;
+        long_input.value=long;
+    }
+
+    mymap.on('click', onMapClick);
+    
+    
+</script>
+
+<script>
+    $( function() {
+        $("#submit").on("click", function() {
+            $.blockUI({ message: $('#loadingMessage') }); 
+        });
+    });
+
+</script>
+
+
+
+
+</body>
+</html> 

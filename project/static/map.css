@@ -1,0 +1,33 @@
+body {
+    background: #ececec;
+}
+.loader {
+    margin: auto;
+    border: 16px solid #f3f3f3; 
+    border-top: 16px solid #db7c0f; 
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+  }
+
+#loadingMessage {
+    background: #6d6d6d71;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#map1 {
+    width: 60%;
+    height: 60%; 
+    margin: 0 auto;
+}
+
+#forms {
+    margin: 0 auto;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}

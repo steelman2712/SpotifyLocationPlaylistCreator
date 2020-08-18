@@ -1,0 +1,9 @@
+{
+    "dev": {
+        "app_function": "project.__init__.app",
+        "profile_name": "dreynolds",
+        "project_name": "slq",
+        "runtime": "python3.6",
+        "s3_bucket": "zappa-jt95k3dhw"
+    }
+}

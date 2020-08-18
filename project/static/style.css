@@ -1,0 +1,40 @@
+.navbar
+{
+    max-width: 75em;
+    position: absolute;
+    left: 0;
+    top: 0;
+    text-align: right;
+    margin: auto;
+    background: #919191;
+    vertical-align: baseline;
+}
+
+.inner {
+		max-width: 75em;
+		margin: 0 auto;
+	}
+
+		@media screen and (max-width: 1280px) {
+
+			.inner {
+				max-width: 90%;
+			}
+
+		}
+
+		@media screen and (max-width: 480px) {
+
+			.inner {
+				max-width: 90%;
+			}
+
+		}
+
+		div#loading {
+			width: 35px;
+			height: 35px;
+			display: none;
+			background: url(/static/ajax-loader.gif) no-repeat;
+			cursor: wait;
+			}
