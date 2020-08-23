@@ -133,8 +133,13 @@ def current_user():
     return spotify.current_user()
 
 def check_authed():
-    spotify = None
-    auth_manager = spotipy.oauth2.SpotifyOAuth(cache_path=session_cache_path())
-    if auth_manager.get_cached_token():
-        spotify = spotipy.Spotify(auth_manager=auth_manager)
+    try:
+        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_path=session_cache_path())
+    except TypeError:
+        auth_manager=None
+    try:
+        if auth_manager.get_cached_token():
+            spotify = spotipy.Spotify(auth_manager=auth_manager)
+    except AttributeError:
+        spotify = None
     return spotify
