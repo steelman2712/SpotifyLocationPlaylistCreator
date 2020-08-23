@@ -9,54 +9,63 @@
     <script src="//unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script> <!--leaflet java script file>-->
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
     <script src="//malsup.github.io/jquery.blockUI.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
     {% endblock %} 
 </head>
 <body>
     {% block content %}
-    <div id="map1" style="width: 60%; height: 600px;"></div>   
+    <div id="contents">
+        <div id="map"></div>   
 
-    <form action="{{url_for('map')}}" id="coordinate_form" method="POST">
-        <input id="latitude" name="latitude" type="text"/>
-        <input id="longitude" name="longitude" type="text"/>
-        <input id="submit" value="Submit" type="submit"/>
-    </form>
+        <div id="inputs">
+            <form action="{{url_for('map')}}" id="coordinate_form" method="POST">
+
+                <div id="latitude_box">
+                    <label for="latitude">Latitude:</label>
+                    <input id="latitude" name="latitude" class="coordinate_input" type="text"/>
+                </div>
+
+                <div id="longitude_box">
+                    <label for="longitude">Longitude:</label>
+                    <input id="longitude" name="longitude" class="coordinate_input" type="text"/>
+                </div>
+                
+                <div id="submit_box" class="inline-block flex-horizontal-center">
+                    <input id="submit" value="Submit" type="submit"/>
+                </div>
+                
+            </form>
+        </div>
+    </div>
 
     <div id="loadingMessage" style="display:none;">
         <h1>Processing data...</h1>
         <div class="loader"></div> 
     </div>
 
+
 <script>
-    var mymap = L.map('map1').setView([51.5, -0.09], 10);
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic3RlZWxtYW4yNzEyIiwiYSI6ImNrYzhhZXpxbzB0YXUydm54a244aHQ5a3EifQ.itjiUabFvbEDR2ddyDukAQ';
+    var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+    center: [-1.5, 53.5], // starting position [lng, lat]
+    zoom: 5, // starting zoom
+    });
 
-    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox/streets-v11',
-        tileSize: 512,
-        zoomOffset: -1,
-        accessToken: 'pk.eyJ1Ijoic3RlZWxtYW4yNzEyIiwiYSI6ImNrYzhhZXpxbzB0YXUydm54a244aHQ5a3EifQ.itjiUabFvbEDR2ddyDukAQ'
-    }).addTo(mymap);
-
-    var popup = L.popup();
-    var latlong;
     var lat_input = document.getElementById("latitude"); 
     var long_input = document.getElementById("longitude"); 
 
-    function onMapClick(e) {
-        popup
-            .setLatLng(e.latlng)
-            .setContent("You clicked the map at " + e.latlng.toString())
-            .openOn(mymap);
-        lat = e.latlng.lat;
-        long = e.latlng.lng;
-        lat_input.value=lat;
-        long_input.value=long;
-    }
+    map.on('click', function(e) {
+        lat_input.value=e.lngLat.lat;
+        long_input.value=e.lngLat.lng;
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(e.lngLat)
+            .addTo(map);
+    });
 
-    mymap.on('click', onMapClick);
-    
-    
 </script>
 
 <script>
@@ -65,6 +74,7 @@
             $.blockUI({ message: $('#loadingMessage') }); 
         });
     });
+
 
 </script>
 

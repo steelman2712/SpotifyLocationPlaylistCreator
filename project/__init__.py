@@ -102,7 +102,7 @@ def callback():
         code_id = request.args.get("code")
         return redirect(url_for('home',code=code_id))
 
-@app.route('/playlists')
+#@app.route('/playlists')
 def playlists():
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_path=session_cache_path())
     if not auth_manager.get_cached_token():
@@ -112,7 +112,7 @@ def playlists():
     return spotify.current_user_playlists()
 
 
-@app.route('/currently_playing')
+#@app.route('/currently_playing')
 def currently_playing():
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_path=session_cache_path())
     if not auth_manager.get_cached_token():
@@ -124,7 +124,7 @@ def currently_playing():
     return "No track currently playing."
 
 
-@app.route('/current_user')
+#@app.route('/current_user')
 def current_user():
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_path=session_cache_path())
     if not auth_manager.get_cached_token():

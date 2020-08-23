@@ -1,5 +1,8 @@
+html { height: 100%; } 
+
 body {
     background: #ececec;
+    height: 100%;
 }
 .loader {
     margin: auto;
@@ -17,16 +20,47 @@ body {
     border-radius: 5px;
 }
 
-#map1 {
-    width: 60%;
-    height: 60%; 
+#contents {
+    display: flex;
+    flex-direction: column;
+    width:100%;
+    min-height: 100%;
     margin: 0 auto;
 }
 
-#forms {
+#map {
+    flex: 10 10 auto;
+    width: 90%;
+    height: 80%;
+    min-height: 60%;
     margin: 0 auto;
 }
 
+#inputs {
+    flex: 1 1 auto;
+    margin: 0 auto;
+}
+
+#coordinate_form {
+    flex: 1 1 auto;
+    flex-direction: row;
+    margin: 0 auto;
+}
+
+.coordinate_input{
+    flex: 1 1 auto;
+}
+
+#submit_box {
+    flex: 1 1 auto;
+    margin: 0 auto;
+}
+
+#submit {
+    display: block;
+    flex: 1 1 auto;
+    margin: 0 auto;
+}
 @keyframes spin {
 0% { transform: rotate(0deg); }
 100% { transform: rotate(360deg); }
