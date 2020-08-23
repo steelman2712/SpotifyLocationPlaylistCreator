@@ -1,15 +1,18 @@
+{% extends "base.html" %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Demo</title>
+    {% block links %}
     <link rel="stylesheet" href="//unpkg.com/leaflet@1.0.3/dist/leaflet.css" /> <!-- Leaflet CSS file (style sheets)>-->
     <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
     <script src="//unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script> <!--leaflet java script file>-->
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
     <script src="//malsup.github.io/jquery.blockUI.js"></script>
-
+    {% endblock %} 
 </head>
 <body>
+    {% block content %}
     <div id="map1" style="width: 60%; height: 600px;"></div>   
 
     <form action="{{url_for('map')}}" id="coordinate_form" method="POST">
@@ -67,6 +70,6 @@
 
 
 
-
+{% endblock %}
 </body>
 </html> 

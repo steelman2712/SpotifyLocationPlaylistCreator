@@ -31,33 +31,27 @@ def home():
     if not session.get('uuid'):
         # Step 1. Visitor is unknown, give random ID
         session['uuid'] = str(uuid.uuid4())
-    print("1")
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope='playlist-modify-private, playlist-modify-public',
                                                 cache_path=session_cache_path(), 
                                                 show_dialog=True)
-    print("2")
+
     if request.args.get("code"):
         # Step 3. Being redirected from Spotify auth page
-        print("2.5")
         auth_manager.get_access_token(request.args.get("code"))
         return redirect(url_for('home'))
-    print("3")
+
     if not auth_manager.get_cached_token():
         # Step 2. Display sign in link when no token
         auth_url = auth_manager.get_authorize_url()
-        print("3.5")
         print(auth_url)
         return redirect(auth_url)
 
-    print("4")
     # Step 4. Signed in, display data
     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    print("5")
-    print(spotify.current_user())
-    return render_template('base.html')
+    return redirect(url_for('map'))
 
 
-@app.route('/artist', methods=['GET','POST'])
+#@app.route('/artist', methods=['GET','POST'])
 def artist(name=None):
     if request.method == 'POST':
         artist = request.form['artist']
@@ -69,6 +63,8 @@ def artist(name=None):
 @app.route('/map', methods=['GET','POST'])
 def map():
     spotify = check_authed()
+    if spotify == None:
+        return redirect(url_for('home'))
     if request.method == 'POST':
         print("post got")
         longitude = request.form['longitude']
@@ -95,8 +91,8 @@ def sign_out():
     try:
         # Remove the CACHE file (.cache-test) so that a new user can authorize.
         os.remove(session_cache_path())
-    except OSError as e:
-        print ("Error: %s - %s." % (e.filename, e.strerror))
+    except (TypeError,OSError):
+        pass
     return redirect(url_for('home'))
 
 
@@ -104,8 +100,6 @@ def sign_out():
 def callback():
     if request.args.get("code"):
         code_id = request.args.get("code")
-        print("---Code Id---")
-        print(code_id)
         return redirect(url_for('home',code=code_id))
 
 @app.route('/playlists')
@@ -139,8 +133,8 @@ def current_user():
     return spotify.current_user()
 
 def check_authed():
+    spotify = None
     auth_manager = spotipy.oauth2.SpotifyOAuth(cache_path=session_cache_path())
-    if not auth_manager.get_cached_token():
-        return redirect(url_for('home'))
-    spotify = spotipy.Spotify(auth_manager=auth_manager)
+    if auth_manager.get_cached_token():
+        spotify = spotipy.Spotify(auth_manager=auth_manager)
     return spotify

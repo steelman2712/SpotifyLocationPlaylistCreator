@@ -80,7 +80,7 @@ class SpotifySparqlQuery(SpotifyPlaylistUtils):
         coordinates = (lat,long), 
         location = reverse_geocode.search(coordinates)
         name = location[0].get("city")+", "+location[0].get("country")
-        description = "A set of songs from around "+name+"
+        description = "A set of songs from around "+name
         playlist_id = super().createPlaylistFromArtistList(spotify_session, artists,name=name, description=description)
         print(playlist_id)
         return playlist_id
