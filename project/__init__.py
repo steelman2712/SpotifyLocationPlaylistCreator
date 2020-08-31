@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
 from .spotify_query import SpotifySparqlQuery
-from . import sparql_query
+from . import sparql_query, spotify_request
 import folium
 import time
 import os
@@ -10,6 +10,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
 import uuid
 import reverse_geocode
+
 
 app = Flask(__name__)
 
@@ -66,12 +67,8 @@ def map():
     if spotify == None:
         return redirect(url_for('home'))
     if request.method == 'POST':
-        print("post got")
-        longitude = request.form['longitude']
-        latitude = request.form['latitude']
-        print("longitude: {longitude}, latitude: {latitude}".format(longitude=longitude, latitude=latitude))
-        sp = SpotifySparqlQuery().createPlaylistFromCoordinates(spotify,latitude,longitude)
-        print("sp")
+        request_object = spotify_request.SpotifyLocationRequest(request)
+        sp = SpotifySparqlQuery().createPlaylist(spotify,request_object)
         return redirect(url_for('results',playlist_id=sp))
 
     return render_template('map.html')
@@ -80,6 +77,7 @@ def map():
 @app.route('/results')
 def results():
     playlist_id = request.args.get('playlist_id')
+    print(playlist_id)
     return render_template('results.html',playlist_id=playlist_id)
 
     

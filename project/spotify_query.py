@@ -63,8 +63,14 @@ class SpotifyPlaylistUtils(SpotifyQueryBase):
             sp.user_playlist_add_tracks(user=username,playlist_id=playlistId,tracks=chunks)
         return playlistId
 
+
+
 class SpotifySparqlQuery(SpotifyPlaylistUtils):
     
+    def createPlaylist(self, spotify_session, request):
+        if request.latitude and request.longitude:
+            return self.createPlaylistFromCoordinates(spotify_session, request)
+
     def createPlaylistFromArtist(self,spotify_session,artist):
         results = sparql.SparqlResultsFromArtist().query(artist)
         artists = [result["artist"] for result in results]
@@ -73,11 +79,12 @@ class SpotifySparqlQuery(SpotifyPlaylistUtils):
         playlist_id = super().createPlaylistFromArtistList(spotify_session, artists, name=town,description=description,public=True)
         return playlist_id
 
-    def createPlaylistFromCoordinates(self, spotify_session, lat, long):
+    def createPlaylistFromCoordinates(self, spotify_session, request):
         sparql_query = sparql.SparqlResultsFromCoordinates()
-        sparql_query.query(lat, long)
+        print(request.latitude)
+        sparql_query.query(request.latitude, request.longitude)
         artists = [result["artist"] for result in sparql_query.sparql_results]
-        coordinates = (lat,long), 
+        coordinates = (request.latitude,request.longitude), 
         location = reverse_geocode.search(coordinates)
         name = location[0].get("city")+", "+location[0].get("country")
         description = "A set of songs from around "+name
