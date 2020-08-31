@@ -5,5 +5,6 @@ GENRES = {
     "country":"wd:Q83440",
     "classical":"wd:Q1583807",
     "rap":"wd:Q6010",
+    "indie":"wd:Q42201"
 }
 
