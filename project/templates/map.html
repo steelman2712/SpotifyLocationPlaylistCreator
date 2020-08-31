@@ -31,6 +31,12 @@
                     <input id="longitude" name="longitude" class="coordinate_input" type="text"/>
                 </div>
                 
+                <div id="range_box">
+                    <label for="radius">Search radius: </label>
+                    <input id="radius" name="radius" type="range" min="0" max="100" oninput="num.value = this.value"/>
+                    <output id="num">0</output>
+                </div>
+
                 <div id="filter_box">
                     <label for="filter">Filter</label>
                     <input id="filters" name="filters" type="checkbox" value="Pop"/>
@@ -62,14 +68,81 @@
     var lat_input = document.getElementById("latitude"); 
     var long_input = document.getElementById("longitude"); 
 
+    map.on('load', function(){
+        map.addSource("polygon", createGeoJSONCircle([0, 0], 0));
+        map.addLayer({
+            "id": "polygon",
+            "type": "fill",
+            "source": "polygon",
+            "layout": {},
+            "paint": {
+                "fill-color": "blue",
+                "fill-opacity": 0.6
+            }
+        });
+    })
+
     map.on('click', function(e) {
         lat_input.value=e.lngLat.lat;
         long_input.value=e.lngLat.lng;
-        new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(e.lngLat)
-            .addTo(map);
-    });
+        map.getSource('polygon').setData(createGeoJSONCircle([e.lngLat.lng, e.lngLat.lat], document.getElementById("radius").value).data);
+        map.removeLayer('polygon')
+        map.addLayer({
+            "id": "polygon",
+            "type": "fill",
+            "source": "polygon",
+            "layout": {},
+            "paint": {
+                "fill-color": "blue",
+                "fill-opacity": 0.6
+            }
+        });
+    });    
+        
+
+    var createGeoJSONCircle = function(center, radiusInKm, points) {
+        if(!points) points = 64;
+
+        var coords = {
+            latitude: center[1],
+            longitude: center[0]
+        };
+
+        var km = radiusInKm;
+
+        var ret = [];
+        var distanceX = km/(111.320*Math.cos(coords.latitude*Math.PI/180));
+        var distanceY = km/110.574;
+
+        var theta, x, y;
+        for(var i=0; i<points; i++) {
+            theta = (i/points)*(2*Math.PI);
+            x = distanceX*Math.cos(theta);
+            y = distanceY*Math.sin(theta);
+
+            ret.push([coords.longitude+x, coords.latitude+y]);
+        }
+        ret.push(ret[0]);
+
+        return {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [ret]
+                    }
+                }]
+            }
+        };
+    };
+
+    
+
+
+
 
 </script>
 
