@@ -80,7 +80,8 @@ class SpotifySparqlQuery(SpotifyPlaylistUtils):
 
     def createPlaylistFromCoordinates(self, spotify_session, request):
         sparql_query = sparql.SparqlResultsFromCoordinates()
-        sparql_query.query(request.latitude, request.longitude, request.radius)
+        print(request.genres)
+        sparql_query.query(request.latitude, request.longitude, request.radius, request.genres)
         artists = [result["artist"] for result in sparql_query.sparql_results]
         coordinates = (request.latitude,request.longitude), 
         location = reverse_geocode.search(coordinates)

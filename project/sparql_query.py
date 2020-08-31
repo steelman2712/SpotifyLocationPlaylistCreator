@@ -2,7 +2,7 @@ import pep8
 import qwikidata.sparql as wiki
 import random
 from halo import Halo
-
+from . import genres as genre_list
 
 class SparqlResults():
   SPARQL_RETRY_LIMIT = 2
@@ -36,10 +36,10 @@ class SparqlResults():
   def createGenreFilter(self,genres):
     genre_filter=""
     if genres == []:
-      genre_filter="wd:Q188451"
+      genre_filter="wd:Q37073"
     else:
-      for genre in genres:
-        genre_filter = genre_filter+genre
+      for item in genres:
+        genre_filter = genre_filter+" "+ genre_list.GENRES[item]
     return genre_filter
 
 class SparqlResultsFromArtist(SparqlResults):
@@ -90,11 +90,12 @@ class SparqlResultsFromArtist(SparqlResults):
 class SparqlResultsFromCoordinates(SparqlResults):
 
 
-  def query(self, lat, long, radius=10, genres="wd:Q37073"):
+  def query(self, lat, long, radius=10, genres=[]):
     print("Query received")
     spinner = Halo(text='Sending query', spinner='line')
     spinner.start()
     genre_filter = super().createGenreFilter(genres)
+    print(genre_filter)
     raw_sparql_query = f"""
       SELECT DISTINCT ?artistLabel ?placeLabel ?location (MD5(CONCAT(str(?artist),str(5))) as ?random) WHERE {{
       hint:Query hint:optimizer "None".

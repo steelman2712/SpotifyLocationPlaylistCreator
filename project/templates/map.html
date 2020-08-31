@@ -38,8 +38,10 @@
                 </div>
 
                 <div id="filter_box">
-                    <label for="filter">Filter</label>
-                    <input id="filters" name="filters" type="checkbox" value="Pop"/>
+                    {% for genre in filters %}
+                    <label for="genres">{{genre}}</label>
+                    <input id="genres" name="genres" type="checkbox" value="{{genre}}"/>
+                    {% endfor %}
                 </div>
 
                 <div id="submit_box" class="inline-block flex-horizontal-center">
