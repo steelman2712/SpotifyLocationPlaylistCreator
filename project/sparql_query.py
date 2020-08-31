@@ -22,16 +22,23 @@ class SparqlResults():
         attempts = attempts+1
   
   def getTown(self,sparql_results):
-        return sparql_results[0].get("townLabel").get("value")
+        return sparql_results[0].get("placeLabel").get("value")
         
   def parseResults(self, sparql_results):
     parsed_results = []
+    print(sparql_results)
     for result in sparql_results:
-      town = result.get("townLabel").get("value")
+      town = result.get("placeLabel").get("value")
       artist = result.get("artistLabel").get("value")
       parsed_results.append({"town":town,"artist":artist})
     self.sparql_results = parsed_results
 
+  def createFilterRegex(self,filter):
+    filter_regex=""
+    for item in filter:
+      filter_regex = filter_regex+item
+    filter_regex+"$"
+    return filter_regex
 
 class SparqlResultsFromArtist(SparqlResults):
 
@@ -81,38 +88,49 @@ class SparqlResultsFromArtist(SparqlResults):
 class SparqlResultsFromCoordinates(SparqlResults):
 
 
-  def query(self, lat, long, radius=10):
+  def query(self, lat, long, radius=10, filter=[]):
+    print("Query received")
     spinner = Halo(text='Sending query', spinner='line')
     spinner.start()
+    filter_regex=super().createFilterRegex(filter)
     raw_sparql_query = f"""
-      SELECT DISTINCT ?artistLabel ?townLabel ?location WHERE {{
+      SELECT DISTINCT ?artistLabel ?placeLabel ?location (MD5(CONCAT(str(?artist),str(5))) as ?random) WHERE {{
       hint:Query hint:optimizer "None".
+      VALUES ?professions {{wd:Q177220 wd:Q639669}}
       SERVICE wikibase:around {{
-        ?town wdt:P625 ?location.
+        ?place wdt:P625 ?location.
         bd:serviceParam wikibase:center "Point({long} {lat})"^^geo:wktLiteral;
         wikibase:radius "{radius}".
       }}
-      ?town wdt:P31/wdt:P279* wd:Q486972 .
+      ?place wdt:P31/wdt:P279 wd:Q486972 .
       
       {{
-        ?artist wdt:P19 ?town.  
-        ?artist (wdt:P106/(wdt:P279*)) wd:Q2643890.
+        ?artist wdt:P19 ?place.  
+        ?artist wdt:P106 ?professions.
         ?artist wdt:P31 wd:Q5.
-        ?artist wikibase:sitelinks ?sitelinks .
       }}
       UNION
       {{
-        ?artist wdt:P740 ?town.
-        ?artist (wdt:P31/(wdt:P279*)) wd:Q215380.
-        ?artist wikibase:sitelinks ?sitelinks .  
+        ?artist wdt:P740 ?place.
+        {{?artist wdt:P31 wd:Q215380.}}
+        UNION
+        {{?artist wdt:P31/wdt:P279 wd:Q215380.}}
       }}
       
-      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
-      FILTER (?sitelinks > 2)
-    }}
-    LIMIT {super().SPARQL_ARTIST_RETURN_LIMIT}
+      ?artist wdt:P136 ?genre .
+      ?artist wikibase:statements ?statementcount .
+      FILTER (?statementcount > 5 ) .
+      FILTER REGEX(?genreLabel, "{filter_regex}") .
+
+      ?artist rdfs:label ?artistLabel. FILTER( LANG(?artistLabel)="en" )
+      ?place rdfs:label ?placeLabel. FILTER( LANG(?placeLabel)="en" )
+      ?genre rdfs:label ?genreLabel. FILTER( LANG(?genreLabel)="en" )
+      }}
+      ORDER BY ?random
+      LIMIT {super().SPARQL_ARTIST_RETURN_LIMIT}
     """
     res = super().get_sparql_results(raw_sparql_query)
+    print("res")
     results = res.get('results').get("bindings")
     spinner.stop()
     super().parseResults(results)
