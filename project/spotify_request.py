@@ -4,6 +4,7 @@ class SpotifyLocationRequest():
         self.latitude = request.form['latitude']
         self.longitude = request.form['longitude']
         self.radius = request.form['radius']
+        self.genres = request.form.getlist('genres')
 
     @property
     def latitude(self):
@@ -29,7 +30,13 @@ class SpotifyLocationRequest():
     def radius(self,value):
         self._radius = value
 
+    @property
+    def genres(self):
+        return self._genres
     
+    @genres.setter
+    def genres(self,value):
+        self._genres = value
 
 
 

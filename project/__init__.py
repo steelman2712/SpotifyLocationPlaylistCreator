@@ -1,7 +1,7 @@
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
 from .spotify_query import SpotifySparqlQuery
-from . import sparql_query, spotify_request
+from . import sparql_query, spotify_request, genres
 import folium
 import time
 import os
@@ -67,11 +67,13 @@ def map():
     if spotify == None:
         return redirect(url_for('home'))
     if request.method == 'POST':
+        print(request.form.getlist('genres'))
         request_object = spotify_request.SpotifyLocationRequest(request)
+        print(request_object.__dict__)
         sp = SpotifySparqlQuery().createPlaylist(spotify,request_object)
         return redirect(url_for('results',playlist_id=sp))
 
-    return render_template('map.html')
+    return render_template('map.html',filters = genres.GENRES)
     
 
 @app.route('/results')
