@@ -33,12 +33,14 @@ class SparqlResults():
       parsed_results.append({"town":town,"artist":artist})
     self.sparql_results = parsed_results
 
-  def createFilterRegex(self,filter):
-    filter_regex=""
-    for item in filter:
-      filter_regex = filter_regex+item
-    filter_regex+"$"
-    return filter_regex
+  def createGenreFilter(self,genres):
+    genre_filter=""
+    if genres == []:
+      genre_filter="wd:Q188451"
+    else:
+      for genre in genres:
+        genre_filter = genre_filter+genre
+    return genre_filter
 
 class SparqlResultsFromArtist(SparqlResults):
 
@@ -88,15 +90,16 @@ class SparqlResultsFromArtist(SparqlResults):
 class SparqlResultsFromCoordinates(SparqlResults):
 
 
-  def query(self, lat, long, radius=10, filter=[]):
+  def query(self, lat, long, radius=10, genres="wd:Q37073"):
     print("Query received")
     spinner = Halo(text='Sending query', spinner='line')
     spinner.start()
-    filter_regex=super().createFilterRegex(filter)
+    genre_filter = super().createGenreFilter(genres)
     raw_sparql_query = f"""
       SELECT DISTINCT ?artistLabel ?placeLabel ?location (MD5(CONCAT(str(?artist),str(5))) as ?random) WHERE {{
       hint:Query hint:optimizer "None".
       VALUES ?professions {{wd:Q177220 wd:Q639669}}
+      VALUES ?genres {{ {genre_filter} }}
       SERVICE wikibase:around {{
         ?place wdt:P625 ?location.
         bd:serviceParam wikibase:center "Point({long} {lat})"^^geo:wktLiteral;
@@ -117,23 +120,19 @@ class SparqlResultsFromCoordinates(SparqlResults):
         {{?artist wdt:P31/wdt:P279 wd:Q215380.}}
       }}
       
-      ?artist wdt:P136 ?genre .
+      ?artist wdt:P136/wdt:P279* ?genres .
       ?artist wikibase:statements ?statementcount .
       FILTER (?statementcount > 5 ) .
-      FILTER REGEX(?genreLabel, "{filter_regex}") .
 
       ?artist rdfs:label ?artistLabel. FILTER( LANG(?artistLabel)="en" )
       ?place rdfs:label ?placeLabel. FILTER( LANG(?placeLabel)="en" )
-      ?genre rdfs:label ?genreLabel. FILTER( LANG(?genreLabel)="en" )
       }}
       ORDER BY ?random
       LIMIT {super().SPARQL_ARTIST_RETURN_LIMIT}
     """
     res = super().get_sparql_results(raw_sparql_query)
-    print("res")
     results = res.get('results').get("bindings")
     spinner.stop()
     super().parseResults(results)
-    print(self.sparql_results)
     return self.sparql_results
     
