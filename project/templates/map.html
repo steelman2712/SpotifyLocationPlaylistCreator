@@ -1,59 +1,155 @@
+{% extends "base.html" %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Demo</title>
+    {% block links %}
     <link rel="stylesheet" href="//unpkg.com/leaflet@1.0.3/dist/leaflet.css" /> <!-- Leaflet CSS file (style sheets)>-->
     <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
     <script src="//unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script> <!--leaflet java script file>-->
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
     <script src="//malsup.github.io/jquery.blockUI.js"></script>
-
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+    {% endblock %} 
 </head>
 <body>
-    <div id="map1" style="width: 60%; height: 600px;"></div>   
+    {% block content %}
+    <div id="contents">
+        <div id="map"></div>   
 
-    <form action="{{url_for('map')}}" id="coordinate_form" method="POST">
-        <input id="latitude" name="latitude" type="text"/>
-        <input id="longitude" name="longitude" type="text"/>
-        <input id="submit" value="Submit" type="submit"/>
-    </form>
+        <div id="inputs">
+            <form action="{{url_for('map')}}" id="coordinate_form" method="POST">
+
+                <div id="latitude_box">
+                    <label for="latitude">Latitude:</label>
+                    <input id="latitude" name="latitude" class="coordinate_input" type="text" oninput="updateRadiusOverlay()"/>
+                </div>
+
+                <div id="longitude_box">
+                    <label for="longitude">Longitude:</label>
+                    <input id="longitude" name="longitude" class="coordinate_input" type="text" oninput="updateRadiusOverlay()"/>
+                </div>
+                
+                <div id="range_box">
+                    <label for="radius">Search radius: </label>
+                    <input id="radius" name="radius" type="range" min="0" max="100" oninput="num.value = this.value;updateRadiusOverlay()"/>
+                    <output id="num">0</output>
+                </div>
+
+                <div id="filter_box">
+                    {% for genre in filters %}
+                    <label for="genres">{{genre}}</label>
+                    <input id="genres" name="genres" type="checkbox" value="{{genre}}"/>
+                    {% endfor %}
+                </div>
+
+                <div id="submit_box" class="inline-block flex-horizontal-center">
+                    <input id="submit" value="Submit" type="submit"/>
+                </div>
+                
+            </form>
+        </div>
+    </div>
 
     <div id="loadingMessage" style="display:none;">
         <h1>Processing data...</h1>
         <div class="loader"></div> 
     </div>
 
+
 <script>
-    var mymap = L.map('map1').setView([51.5, -0.09], 10);
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic3RlZWxtYW4yNzEyIiwiYSI6ImNrYzhhZXpxbzB0YXUydm54a244aHQ5a3EifQ.itjiUabFvbEDR2ddyDukAQ';
+    var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+    center: [-1.5, 53.5], // starting position [lng, lat]
+    zoom: 5, // starting zoom
+    });
 
-    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox/streets-v11',
-        tileSize: 512,
-        zoomOffset: -1,
-        accessToken: 'pk.eyJ1Ijoic3RlZWxtYW4yNzEyIiwiYSI6ImNrYzhhZXpxbzB0YXUydm54a244aHQ5a3EifQ.itjiUabFvbEDR2ddyDukAQ'
-    }).addTo(mymap);
-
-    var popup = L.popup();
-    var latlong;
     var lat_input = document.getElementById("latitude"); 
     var long_input = document.getElementById("longitude"); 
 
-    function onMapClick(e) {
-        popup
-            .setLatLng(e.latlng)
-            .setContent("You clicked the map at " + e.latlng.toString())
-            .openOn(mymap);
-        lat = e.latlng.lat;
-        long = e.latlng.lng;
-        lat_input.value=lat;
-        long_input.value=long;
+    map.on('load', function(){
+        map.addSource("polygon", createGeoJSONCircle([0, 0], 100));
+        map.addLayer({
+            "id": "polygon",
+            "type": "fill",
+            "source": "polygon",
+            "layout": {},
+            "paint": {
+                "fill-color": "blue",
+                "fill-opacity": 0.3
+            }
+        });
+        console.log(map.getLayer('polygon'))
+    })
+
+    map.on('click', function(e) {
+        lat_input.value=e.lngLat.lat;
+        long_input.value=e.lngLat.lng;
+        updateRadiusOverlay()
+    });    
+        
+
+    var createGeoJSONCircle = function(center, radiusInKm, points) {
+        if(!points) points = 64;
+
+        var coords = {
+            latitude: center[1],
+            longitude: center[0]
+        };
+
+        var km = radiusInKm;
+
+        var ret = [];
+        var distanceX = km/(111.320*Math.cos(coords.latitude*Math.PI/180));
+        var distanceY = km/110.574;
+
+        var theta, x, y;
+        for(var i=0; i<points; i++) {
+            theta = (i/points)*(2*Math.PI);
+            x = distanceX*Math.cos(theta);
+            y = distanceY*Math.sin(theta);
+
+            ret.push([coords.longitude+x, coords.latitude+y]);
+        }
+        ret.push(ret[0]);
+
+        return {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [ret]
+                    }
+                }]
+            }
+        };
+    };
+
+    
+    function updateRadiusOverlay(){
+        map.getSource('polygon').setData(createGeoJSONCircle([Number(document.getElementById("longitude").value), Number(document.getElementById("latitude").value)], document.getElementById("radius").value).data);
+        map.removeLayer('polygon');
+        map.addLayer({
+            "id": "polygon",
+            "type": "fill",
+            "source": "polygon",
+            "layout": {},
+            "paint": {
+                "fill-color": "blue",
+                "fill-opacity": 0.3,
+                "fill-outline-color":"black"
+            }
+        });
     }
 
-    mymap.on('click', onMapClick);
-    
-    
+
+
 </script>
 
 <script>
@@ -63,10 +159,11 @@
         });
     });
 
+
 </script>
 
 
 
-
+{% endblock %}
 </body>
 </html> 
