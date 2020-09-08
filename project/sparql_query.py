@@ -4,51 +4,52 @@ import random
 from halo import Halo
 from . import genres as genre_list
 
-class SparqlResults():
-  SPARQL_RETRY_LIMIT = 2
-  SPARQL_ARTIST_RETURN_LIMIT = 20
-  sparql_results = {"town":"No town found", "artist":"No artist found"}
 
-  def set_retry_limit(self, retry_limit):
-    self.SPARQL_RETRY_LIMIT=retry_limit
+class SparqlResults:
+    SPARQL_RETRY_LIMIT = 2
+    SPARQL_ARTIST_RETURN_LIMIT = 20
+    sparql_results = {"town": "No town found", "artist": "No artist found"}
 
-  def get_sparql_results(self, raw_sparql_query):
-    attempts = 0
-    while attempts<=self.SPARQL_RETRY_LIMIT:
-      try:
-        res = wiki.return_sparql_query_results(raw_sparql_query)
-        return(res)
-      except:
-        attempts = attempts+1
-  
-  def getTown(self,sparql_results):
+    def set_retry_limit(self, retry_limit):
+        self.SPARQL_RETRY_LIMIT = retry_limit
+
+    def get_sparql_results(self, raw_sparql_query):
+        attempts = 0
+        while attempts <= self.SPARQL_RETRY_LIMIT:
+            try:
+                res = wiki.return_sparql_query_results(raw_sparql_query)
+                return res
+            except:
+                attempts = attempts + 1
+
+    def getTown(self, sparql_results):
         return sparql_results[0].get("placeLabel").get("value")
-        
-  def parseResults(self, sparql_results):
-    parsed_results = []
-    print(sparql_results)
-    for result in sparql_results:
-      town = result.get("placeLabel").get("value")
-      artist = result.get("artistLabel").get("value")
-      parsed_results.append({"town":town,"artist":artist})
-    self.sparql_results = parsed_results
 
-  def createGenreFilter(self,genres):
-    genre_filter=""
-    if genres == []:
-      genre_filter="wd:Q37073"
-    else:
-      for item in genres:
-        genre_filter = genre_filter+" "+ genre_list.GENRES[item]
-    return genre_filter
+    def parseResults(self, sparql_results):
+        parsed_results = []
+        print(sparql_results)
+        for result in sparql_results:
+            town = result.get("placeLabel").get("value")
+            artist = result.get("artistLabel").get("value")
+            parsed_results.append({"town": town, "artist": artist})
+        self.sparql_results = parsed_results
+
+    def createGenreFilter(self, genres):
+        genre_filter = ""
+        if genres == []:
+            genre_filter = "wd:Q37073"
+        else:
+            for item in genres:
+                genre_filter = genre_filter + " " + genre_list.GENRES[item]
+        return genre_filter
+
 
 class SparqlResultsFromArtist(SparqlResults):
-
-  def query(self, artist):
-    spinner = Halo(text='Sending query', spinner='line')
-    spinner.start()
-    random_int = random.uniform(0,100)
-    raw_sparql_query = f"""
+    def query(self, artist):
+        spinner = Halo(text="Sending query", spinner="line")
+        spinner.start()
+        random_int = random.uniform(0, 100)
+        raw_sparql_query = f"""
     SELECT DISTINCT ?townLabel ?artist ?artistLabel (MD5(CONCAT(str(?artist),str({random_int}))) as ?random) WHERE {{
       {{
         ?artist wdt:P19 ?town.  
@@ -80,23 +81,21 @@ class SparqlResultsFromArtist(SparqlResults):
     ORDER BY ?random
     LIMIT {super().SPARQL_ARTIST_RETURN_LIMIT}
     """
-    res = super().get_sparql_results(raw_sparql_query)
-    results = res.get('results').get("bindings")
-    spinner.stop()
-    super().parseResults(results)
-    return self.sparql_results
+        res = super().get_sparql_results(raw_sparql_query)
+        results = res.get("results").get("bindings")
+        spinner.stop()
+        super().parseResults(results)
+        return self.sparql_results
 
- 
+
 class SparqlResultsFromCoordinates(SparqlResults):
-
-
-  def query(self, lat, long, radius=10, genres=[]):
-    print("Query received")
-    spinner = Halo(text='Sending query', spinner='line')
-    spinner.start()
-    genre_filter = super().createGenreFilter(genres)
-    print(genre_filter)
-    raw_sparql_query = f"""
+    def query(self, lat, long, radius=10, genres=[]):
+        print("Query received")
+        spinner = Halo(text="Sending query", spinner="line")
+        spinner.start()
+        genre_filter = super().createGenreFilter(genres)
+        print(genre_filter)
+        raw_sparql_query = f"""
       SELECT DISTINCT ?artistLabel ?placeLabel ?location (MD5(CONCAT(str(?artist),str(5))) as ?random) WHERE {{
       hint:Query hint:optimizer "None".
       VALUES ?professions {{wd:Q177220 wd:Q639669}}
@@ -131,9 +130,8 @@ class SparqlResultsFromCoordinates(SparqlResults):
       ORDER BY ?random
       LIMIT {super().SPARQL_ARTIST_RETURN_LIMIT}
     """
-    res = super().get_sparql_results(raw_sparql_query)
-    results = res.get('results').get("bindings")
-    spinner.stop()
-    super().parseResults(results)
-    return self.sparql_results
-    
+        res = super().get_sparql_results(raw_sparql_query)
+        results = res.get("results").get("bindings")
+        spinner.stop()
+        super().parseResults(results)
+        return self.sparql_results

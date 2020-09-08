@@ -1,17 +1,16 @@
-class SpotifyLocationRequest():
-
+class SpotifyLocationRequest:
     def __init__(self, request):
-        self.latitude = request.form['latitude']
-        self.longitude = request.form['longitude']
-        self.radius = request.form['radius']
-        self.genres = request.form.getlist('genres')
+        self.latitude = request.form["latitude"]
+        self.longitude = request.form["longitude"]
+        self.radius = request.form["radius"]
+        self.genres = request.form.getlist("genres")
 
     @property
     def latitude(self):
         return self._latitude
 
     @latitude.setter
-    def latitude(self,value):
+    def latitude(self, value):
         self._latitude = value
 
     @property
@@ -19,7 +18,7 @@ class SpotifyLocationRequest():
         return self._longitude
 
     @longitude.setter
-    def longitude(self,value):
+    def longitude(self, value):
         self._longitude = value
 
     @property
@@ -27,18 +26,13 @@ class SpotifyLocationRequest():
         return self._radius
 
     @radius.setter
-    def radius(self,value):
+    def radius(self, value):
         self._radius = value
 
     @property
     def genres(self):
         return self._genres
-    
+
     @genres.setter
-    def genres(self,value):
+    def genres(self, value):
         self._genres = value
-
-
-
-    
-    
