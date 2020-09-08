@@ -7,3 +7,4 @@
 *.sh
 *.zip
 .env
+zappa_settings.json
