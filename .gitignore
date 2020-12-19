@@ -4,7 +4,6 @@
 /project/.spotify_caches/
 *.cache*
 *.code-workspace
-*.sh
 *.zip
 .env
 zappa_settings.json
