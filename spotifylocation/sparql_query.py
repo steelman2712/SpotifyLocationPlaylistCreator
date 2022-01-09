@@ -1,8 +1,7 @@
-import pep8
 import qwikidata.sparql as wiki
 import random
 from halo import Halo
-from . import genres as genre_list
+import genres as genre_list
 
 
 class SparqlResults:

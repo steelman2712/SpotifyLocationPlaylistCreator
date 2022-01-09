@@ -34,7 +34,7 @@
                 <div id="range_box">
                     <label for="radius">Search radius: </label>
                     <input id="radius" name="radius" type="range" min="0" max="100" oninput="num.value = this.value;updateRadiusOverlay()"/>
-                    <output id="num">0</output>
+                    <output id="num">50</output>
                 </div>
 
                 <div id="filter_box">
@@ -59,7 +59,7 @@
 
 
 <script>
-    mapboxgl.accessToken = 'pk.eyJ1Ijoic3RlZWxtYW4yNzEyIiwiYSI6ImNrYzhhZXpxbzB0YXUydm54a244aHQ5a3EifQ.itjiUabFvbEDR2ddyDukAQ';
+    mapboxgl.accessToken = "{{ mapbox_token }}";
     var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location

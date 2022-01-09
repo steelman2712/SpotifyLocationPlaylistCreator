@@ -1,10 +1,9 @@
-import pep8
 import spotipy
 import sys
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
 import random
-from . import sparql_query as sparql
+import sparql_query as sparql
 import flask
 import reverse_geocode
 

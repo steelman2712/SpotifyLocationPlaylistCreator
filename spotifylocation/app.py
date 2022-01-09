@@ -1,8 +1,9 @@
+import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
-from .spotify_query import SpotifySparqlQuery
-from . import sparql_query, spotify_request, genres
-import folium
+from spotify_query import SpotifySparqlQuery
+import sparql_query, spotify_request, genres
 import time
 import os
 import spotipy
@@ -27,6 +28,11 @@ if not os.path.exists(caches_folder):
 def session_cache_path():
     return caches_folder + session.get("uuid")
 
+auth_manager = spotipy.oauth2.SpotifyOAuth(
+        scope="playlist-modify-private, playlist-modify-public",
+        cache_path=session_cache_path(),
+        show_dialog=True,
+    )
 
 @app.route("/")
 def home():
@@ -34,16 +40,8 @@ def home():
     if not session.get("uuid"):
         # Step 1. Visitor is unknown, give random ID
         session["uuid"] = str(uuid.uuid4())
-    auth_manager = spotipy.oauth2.SpotifyOAuth(
-        scope="playlist-modify-private, playlist-modify-public",
-        cache_path=session_cache_path(),
-        show_dialog=True,
-    )
+    
 
-    if request.args.get("code"):
-        # Step 3. Being redirected from Spotify auth page
-        auth_manager.get_access_token(request.args.get("code"))
-        return redirect(url_for("home"))
 
     if not auth_manager.get_cached_token():
         # Step 2. Display sign in link when no token
@@ -51,7 +49,7 @@ def home():
         print(auth_url)
         return redirect(auth_url)
 
-    # Step 4. Signed in, display data
+    # Step 3. Signed in, display data
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     return redirect(url_for("map"))
 
@@ -69,6 +67,7 @@ def artist(name=None):
 @app.route("/map", methods=["GET", "POST"])
 def map():
     spotify = check_authed()
+    mapbox_token = os.getenv("MAPBOX_TOKEN")
     if spotify == None:
         return redirect(url_for("home"))
     if request.method == "POST":
@@ -78,7 +77,7 @@ def map():
         sp = SpotifySparqlQuery().createPlaylist(spotify, request_object)
         return redirect(url_for("results", playlist_id=sp))
 
-    return render_template("map.html", filters=genres.GENRES)
+    return render_template("map.html", filters=genres.GENRES, mapbox_token=mapbox_token)
 
 
 @app.route("/results")
@@ -104,6 +103,7 @@ def sign_out():
 def callback():
     if request.args.get("code"):
         code_id = request.args.get("code")
+        auth_manager.get_access_token(code_id)
         return redirect(url_for("home", code=code_id))
 
 
