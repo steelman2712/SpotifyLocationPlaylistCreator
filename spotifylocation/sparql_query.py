@@ -1,7 +1,7 @@
 import qwikidata.sparql as wiki
 import random
 from halo import Halo
-from .genres import GENRES
+from genres import GENRES
 
 
 class SparqlResults:
@@ -18,7 +18,7 @@ class SparqlResults:
             try:
                 res = wiki.return_sparql_query_results(raw_sparql_query)
                 return res
-            except:
+            except Exception:
                 attempts = attempts + 1
 
     def getplace(self, sparql_results):
@@ -51,7 +51,7 @@ class SparqlResultsFromArtist(SparqlResults):
         raw_sparql_query = f"""
     SELECT DISTINCT ?placeLabel ?artist ?artistLabel (MD5(CONCAT(str(?artist),str({random_int}))) as ?random) WHERE {{
       {{
-        ?artist wdt:P19 ?place.  
+        ?artist wdt:P19 ?place.
         ?artist (wdt:P106/(wdt:P279*)) wd:Q2643890.
         ?artist wdt:P31 wd:Q5.
         ?artist wikibase:sitelinks ?sitelinks .
@@ -59,12 +59,10 @@ class SparqlResultsFromArtist(SparqlResults):
       UNION
       {{
         ?artist wdt:P740 ?place.
-        ?artist wikibase:sitelinks ?sitelinks .  
+        ?artist wikibase:sitelinks ?sitelinks .
       }}
-      
-      
       {{
-        ?artistA wdt:P19 ?place.  
+        ?artistA wdt:P19 ?place.
         ?artistA (wdt:P106/(wdt:P279*)) wd:Q2643890.
         ?artistA wdt:P31 wd:Q5.
       }}
@@ -107,7 +105,7 @@ class SparqlResultsFromCoordinates(SparqlResults):
       ?place wdt:P31/wdt:P279 wd:Q486972 .
       
       {{
-        ?artist wdt:P19 ?place.  
+        ?artist wdt:P19 ?place.
         ?artist wdt:P106 ?professions.
         ?artist wdt:P31 wd:Q5.
       }}

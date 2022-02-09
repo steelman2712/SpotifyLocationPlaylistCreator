@@ -23,7 +23,7 @@ class SpotifyQueryBase:
         trackIds = []
         for artist in artists:
             artistId = self.getArtistId(spotify_session, artist)
-            if artistId != None:
+            if artistId is not None:
                 artistTrackIds = self.getTracksFromArtist(spotify_session, artistId)
                 trackIds.extend(artistTrackIds)
         return trackIds
