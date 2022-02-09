@@ -3,14 +3,10 @@ import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
 from spotify_query import SpotifySparqlQuery
-import sparql_query, spotify_request, genres
-import time
+import spotify_request, genres
 import os
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy.util as util
 import uuid
-import reverse_geocode
 
 
 app = Flask(__name__)
@@ -59,7 +55,7 @@ def artist(name=None):
     if request.method == "POST":
         artist = request.form["artist"]
         # results = sparql_query.SparqlResultsFromArtist().query(artist)
-        return render_template("artist.html", town="Town")
+        return render_template("artist.html", place="place")
 
     return render_template("artist.html")
 

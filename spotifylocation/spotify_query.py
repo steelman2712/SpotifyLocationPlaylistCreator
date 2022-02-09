@@ -1,10 +1,4 @@
-import spotipy
-import sys
-import spotipy.util as util
-from spotipy.oauth2 import SpotifyClientCredentials
-import random
 import sparql_query as sparql
-import flask
 import reverse_geocode
 
 
@@ -77,12 +71,12 @@ class SpotifySparqlQuery(SpotifyPlaylistUtils):
     def createPlaylistFromArtist(self, spotify_session, artist):
         results = sparql.SparqlResultsFromArtist().query(artist)
         artists = [result["artist"] for result in results]
-        town = results[0]["town"]
-        description = "A playlist containing songs by bands from the same town as {artist}".format(
+        place = results[0]["place"]
+        description = "A playlist containing songs by bands from the same place as {artist}".format(
             artist=artist
         )
         playlist_id = super().createPlaylistFromArtistList(
-            spotify_session, artists, name=town, description=description, public=True
+            spotify_session, artists, name=place, description=description, public=True
         )
         return playlist_id
 
