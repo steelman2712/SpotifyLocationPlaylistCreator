@@ -1,16 +1,16 @@
-import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 from flask import Flask, session, render_template, request, url_for, redirect
 from flask_session import Session
 from spotify_query import SpotifySparqlQuery
-import sparql_query, spotify_request, genres
-import time
+import spotify_request
+import genres
 import os
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy.util as util
 import uuid
-import reverse_geocode
 
 
 app = Flask(__name__)
@@ -28,11 +28,16 @@ if not os.path.exists(caches_folder):
 def session_cache_path():
     return caches_folder + session.get("uuid")
 
-auth_manager = spotipy.oauth2.SpotifyOAuth(
+
+@app.before_first_request
+def setup():
+    global auth_manager 
+    auth_manager = spotipy.oauth2.SpotifyOAuth(
         scope="playlist-modify-private, playlist-modify-public",
         cache_path=session_cache_path(),
         show_dialog=True,
     )
+
 
 @app.route("/")
 def home():
@@ -40,8 +45,6 @@ def home():
     if not session.get("uuid"):
         # Step 1. Visitor is unknown, give random ID
         session["uuid"] = str(uuid.uuid4())
-    
-
 
     if not auth_manager.get_cached_token():
         # Step 2. Display sign in link when no token
@@ -59,7 +62,7 @@ def artist(name=None):
     if request.method == "POST":
         artist = request.form["artist"]
         # results = sparql_query.SparqlResultsFromArtist().query(artist)
-        return render_template("artist.html", town="Town")
+        return render_template("artist.html", place="place")
 
     return render_template("artist.html")
 
@@ -68,7 +71,7 @@ def artist(name=None):
 def map():
     spotify = check_authed()
     mapbox_token = os.getenv("MAPBOX_TOKEN")
-    if spotify == None:
+    if spotify is None:
         return redirect(url_for("home"))
     if request.method == "POST":
         print(request.form.getlist("genres"))
@@ -124,7 +127,7 @@ def currently_playing():
         return redirect("/")
     spotify = spotipy.Spotify(auth_manager=auth_manager)
     track = spotify.current_user_playing_track()
-    if not track is None:
+    if track is not None:
         return track
     return "No track currently playing."
 

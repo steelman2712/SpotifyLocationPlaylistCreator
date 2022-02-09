@@ -4,3 +4,7 @@ start:
 restart:
 	docker-compose down
 	docker-compose up --build
+
+lint:
+	black .
+	flake8

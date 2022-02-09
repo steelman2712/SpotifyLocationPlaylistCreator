@@ -1,13 +1,13 @@
 import qwikidata.sparql as wiki
 import random
 from halo import Halo
-import genres as genre_list
+from genres import GENRES
 
 
 class SparqlResults:
     SPARQL_RETRY_LIMIT = 2
     SPARQL_ARTIST_RETURN_LIMIT = 20
-    sparql_results = {"town": "No town found", "artist": "No artist found"}
+    sparql_results = {"place": "No place found", "artist": "No artist found"}
 
     def set_retry_limit(self, retry_limit):
         self.SPARQL_RETRY_LIMIT = retry_limit
@@ -18,19 +18,19 @@ class SparqlResults:
             try:
                 res = wiki.return_sparql_query_results(raw_sparql_query)
                 return res
-            except:
+            except Exception:
                 attempts = attempts + 1
 
-    def getTown(self, sparql_results):
+    def getplace(self, sparql_results):
         return sparql_results[0].get("placeLabel").get("value")
 
     def parseResults(self, sparql_results):
         parsed_results = []
         print(sparql_results)
         for result in sparql_results:
-            town = result.get("placeLabel").get("value")
+            place = result.get("placeLabel").get("value")
             artist = result.get("artistLabel").get("value")
-            parsed_results.append({"town": town, "artist": artist})
+            parsed_results.append({"place": place, "artist": artist})
         self.sparql_results = parsed_results
 
     def createGenreFilter(self, genres):
@@ -39,7 +39,7 @@ class SparqlResults:
             genre_filter = "wd:Q37073"
         else:
             for item in genres:
-                genre_filter = genre_filter + " " + genre_list.GENRES[item]
+                genre_filter = genre_filter + " " + GENRES[item]
         return genre_filter
 
 
@@ -49,28 +49,26 @@ class SparqlResultsFromArtist(SparqlResults):
         spinner.start()
         random_int = random.uniform(0, 100)
         raw_sparql_query = f"""
-    SELECT DISTINCT ?townLabel ?artist ?artistLabel (MD5(CONCAT(str(?artist),str({random_int}))) as ?random) WHERE {{
+    SELECT DISTINCT ?placeLabel ?artist ?artistLabel (MD5(CONCAT(str(?artist),str({random_int}))) as ?random) WHERE {{
       {{
-        ?artist wdt:P19 ?town.  
+        ?artist wdt:P19 ?place.
         ?artist (wdt:P106/(wdt:P279*)) wd:Q2643890.
         ?artist wdt:P31 wd:Q5.
         ?artist wikibase:sitelinks ?sitelinks .
       }}
       UNION
       {{
-        ?artist wdt:P740 ?town.
-        ?artist wikibase:sitelinks ?sitelinks .  
+        ?artist wdt:P740 ?place.
+        ?artist wikibase:sitelinks ?sitelinks .
       }}
-      
-      
       {{
-        ?artistA wdt:P19 ?town.  
+        ?artistA wdt:P19 ?place.
         ?artistA (wdt:P106/(wdt:P279*)) wd:Q2643890.
         ?artistA wdt:P31 wd:Q5.
       }}
       UNION
       {{
-        ?artistA wdt:P740 ?town.
+        ?artistA wdt:P740 ?place.
         ?artistA (wdt:P31/(wdt:P279*)) wd:Q215380.
       }}
         ?artistA ?label "{artist}"@en .
@@ -107,7 +105,7 @@ class SparqlResultsFromCoordinates(SparqlResults):
       ?place wdt:P31/wdt:P279 wd:Q486972 .
       
       {{
-        ?artist wdt:P19 ?place.  
+        ?artist wdt:P19 ?place.
         ?artist wdt:P106 ?professions.
         ?artist wdt:P31 wd:Q5.
       }}
